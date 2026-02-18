@@ -36,6 +36,42 @@ const StrudioPreset = definePreset(Nora, {
       },
     },
   },
+  components: {
+    slider: {
+      track: {
+        size: '8px',
+      },
+      handle: {
+        width: '18px',
+        height: '18px',
+      },
+    },
+    splitter: {
+      gutter: {
+        background: '#1e3a5a',
+      },
+    },
+    accordion: {
+      panel: {
+        borderColor: '#1e3a5a',
+      },
+      header: {
+        background: 'transparent',
+        hoverBackground: '#1e3a5a',
+        activeBackground: 'transparent',
+        activeHoverBackground: '#1e3a5a',
+        color: '#d783b6',
+        hoverColor: '#d783b6',
+        activeColor: '#d783b6',
+        activeHoverColor: '#d783b6',
+        padding: '0.5rem 0.75rem',
+      },
+      content: {
+        background: 'transparent',
+        padding: '0.5rem 0.75rem',
+      },
+    },
+  },
 })
 
 export default defineNuxtConfig({
