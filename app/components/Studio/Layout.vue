@@ -1,7 +1,13 @@
+<script setup lang="ts">
+defineProps<{
+  mode?: 'writer' | 'mix'
+}>()
+</script>
+
 <template>
   <div class="h-screen flex flex-col bg-navy-950 text-white overflow-hidden">
     <slot name="toolbar" />
-    <Splitter class="flex-1 min-h-0 !border-0 !bg-transparent">
+    <Splitter v-if="mode === 'mix'" class="flex-1 min-h-0 !border-0 !bg-transparent">
       <SplitterPanel :size="40" :min-size="20" class="min-h-0 overflow-auto">
         <slot name="editor" />
       </SplitterPanel>
@@ -9,5 +15,8 @@
         <slot name="panel" />
       </SplitterPanel>
     </Splitter>
+    <div v-else class="flex-1 min-h-0 overflow-auto">
+      <slot name="editor" />
+    </div>
   </div>
 </template>
