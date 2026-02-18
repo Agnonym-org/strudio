@@ -1,0 +1,81 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+/*
+  strudel-editor inserts its CodeMirror container as a sibling (nextSibling),
+  not as a child. We style both the element and its generated sibling.
+*/
+strudel-editor {
+  display: none; /* the element itself is just a placeholder */
+}
+
+/* The div created by connectedCallback right after strudel-editor */
+strudel-editor + div {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+strudel-editor + div .cm-editor {
+  flex: 1;
+  min-height: 0;
+}
+
+strudel-editor + div .cm-scroller {
+  overflow: auto;
+}
+
+/* PrimeVue Splitter: subtle gutter styling */
+.p-splitter-gutter-handle {
+  background: #375e97 !important;
+  border-radius: 4px;
+}
+
+/* PrimeVue Accordion: match dark navy theme */
+.p-accordion {
+  border: none;
+}
+
+.p-accordionpanel {
+  border-color: #1e3a5a;
+}
+
+.p-accordionheader-toggle-icon {
+  color: #2d4e7e;
+  background: #1e3a5a;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: color 0.2s, background-color 0.2s;
+}
+
+.p-accordionheader-toggle-icon svg {
+  width: 0.65rem !important;
+  height: 0.65rem !important;
+}
+
+.p-accordionheader {
+  gap: 0.5rem;
+}
+
+.p-accordionheader:hover .p-accordionheader-toggle-icon {
+  color: #d783b6;
+  background: #284368;
+}
+
+/* Closed panel: magenta chevron */
+.p-accordionpanel:not([data-p-active='true']) .p-accordionheader-toggle-icon {
+  color: #dc265d;
+  background: #3d0a1a;
+}
+
+.p-accordionpanel:not([data-p-active='true']) .p-accordionheader:hover .p-accordionheader-toggle-icon {
+  color: #ee4f80;
+  background: #6e1531;
+}

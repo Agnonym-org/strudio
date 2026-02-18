@@ -47,6 +47,7 @@ export default defineNuxtConfig({
       strudelDocsUrl: 'https://strudel.cc/workshop/getting-started/',
     },
   },
+  css: ['~/assets/css/main.css'],
   modules: ['@nuxtjs/tailwindcss', '@primevue/nuxt-module'],
   primevue: {
     options: {
