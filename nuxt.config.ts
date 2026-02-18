@@ -42,6 +42,11 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   ssr: false,
+  runtimeConfig: {
+    public: {
+      strudelDocsUrl: 'https://strudel.cc/workshop/getting-started/',
+    },
+  },
   modules: ['@nuxtjs/tailwindcss', '@primevue/nuxt-module'],
   primevue: {
     options: {
