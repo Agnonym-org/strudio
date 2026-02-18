@@ -3,6 +3,7 @@ import { REPL_KEY, useRepl } from '~/composables/useRepl'
 
 const editorEl = ref()
 const panelRef = ref()
+const viewMode = ref<'writer' | 'mix'>('mix')
 
 // Repl composable — shared via provide
 const repl = useRepl(editorEl)
@@ -19,9 +20,9 @@ function onScan() {
 </script>
 
 <template>
-  <StudioLayout>
+  <StudioLayout :mode="viewMode">
     <template #toolbar>
-      <StudioToolbar @scan="onScan" />
+      <StudioToolbar :mode="viewMode" @update:mode="viewMode = $event" @scan="onScan" />
     </template>
 
     <template #editor>
