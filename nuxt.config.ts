@@ -95,4 +95,9 @@ export default defineNuxtConfig({
       },
     },
   },
+  vue: {
+    compilerOptions: {
+      isCustomElement: (tag) => tag === 'strudel-editor',
+    },
+  },
 })
