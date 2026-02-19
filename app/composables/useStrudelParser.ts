@@ -52,37 +52,42 @@ export interface ParsedCode {
 // ---- Configs ----
 
 const PARAM_CONFIG: Record<string, ParamConfig> = {
-  lpf: { min: 20, max: 20000, step: 1, widget: 'slider', label: 'Low Pass' },
-  hpf: { min: 20, max: 20000, step: 1, widget: 'slider', label: 'High Pass' },
-  bpf: { min: 20, max: 20000, step: 1, widget: 'slider', label: 'Band Pass' },
-  lpq: { min: 0, max: 50, step: 0.1, widget: 'dial', label: 'LP Resonance' },
-  hpq: { min: 0, max: 50, step: 0.1, widget: 'dial', label: 'HP Resonance' },
-  lpenv: { min: -10000, max: 10000, step: 1, widget: 'slider', label: 'LP Env' },
-  lpd: { min: 0, max: 2, step: 0.01, widget: 'dial', label: 'LP Decay' },
-  lpa: { min: 0, max: 2, step: 0.01, widget: 'dial', label: 'LP Attack' },
-  gain: { min: 0, max: 2, step: 0.01, widget: 'slider', label: 'Gain' },
-  postgain: { min: 0, max: 2, step: 0.01, widget: 'slider', label: 'Post Gain' },
-  clip: { min: 0, max: 2, step: 0.01, widget: 'slider', label: 'Clip' },
-  shape: { min: 0, max: 1, step: 0.01, widget: 'dial', label: 'Shape' },
-  attack: { min: 0, max: 4, step: 0.01, widget: 'slider', label: 'Attack' },
-  decay: { min: 0, max: 4, step: 0.01, widget: 'slider', label: 'Decay' },
+  // Filters — usable mix range (ensureRange expands if code value exceeds)
+  lpf: { min: 100, max: 8000, step: 10, widget: 'slider', label: 'Low Pass' },
+  hpf: { min: 20, max: 4000, step: 10, widget: 'slider', label: 'High Pass' },
+  bpf: { min: 100, max: 6000, step: 10, widget: 'slider', label: 'Band Pass' },
+  lpq: { min: 0, max: 12, step: 0.1, widget: 'dial', label: 'LP Resonance' },
+  hpq: { min: 0, max: 12, step: 0.1, widget: 'dial', label: 'HP Resonance' },
+  lpenv: { min: -4000, max: 4000, step: 10, widget: 'slider', label: 'LP Env' },
+  lpd: { min: 0, max: 1, step: 0.01, widget: 'dial', label: 'LP Decay' },
+  lpa: { min: 0, max: 1, step: 0.01, widget: 'dial', label: 'LP Attack' },
+  // Amplitude
+  gain: { min: 0, max: 1.5, step: 0.01, widget: 'slider', label: 'Gain' },
+  postgain: { min: 0, max: 1.5, step: 0.01, widget: 'slider', label: 'Post Gain' },
+  clip: { min: 0, max: 1, step: 0.01, widget: 'slider', label: 'Clip' },
+  shape: { min: 0, max: 0.8, step: 0.01, widget: 'dial', label: 'Shape' },
+  // Envelope
+  attack: { min: 0, max: 2, step: 0.01, widget: 'slider', label: 'Attack' },
+  decay: { min: 0, max: 2, step: 0.01, widget: 'slider', label: 'Decay' },
   sustain: { min: 0, max: 1, step: 0.01, widget: 'slider', label: 'Sustain' },
-  release: { min: 0, max: 4, step: 0.01, widget: 'slider', label: 'Release' },
-  room: { min: 0, max: 4, step: 0.1, widget: 'dial', label: 'Room' },
-  roomsize: { min: 0, max: 4, step: 0.1, widget: 'dial', label: 'Room Size' },
+  release: { min: 0, max: 2, step: 0.01, widget: 'slider', label: 'Release' },
+  // Effects
+  room: { min: 0, max: 1.5, step: 0.05, widget: 'dial', label: 'Room' },
+  roomsize: { min: 0, max: 1.5, step: 0.05, widget: 'dial', label: 'Room Size' },
   delay: { min: 0, max: 1, step: 0.01, widget: 'dial', label: 'Delay' },
   delaytime: { min: 0, max: 1, step: 0.001, widget: 'slider', label: 'Delay Time' },
-  delayfeedback: { min: 0, max: 1, step: 0.01, widget: 'slider', label: 'Delay FB' },
+  delayfeedback: { min: 0, max: 0.9, step: 0.01, widget: 'slider', label: 'Delay FB' },
+  // Routing & playback
   orbit: { min: 0, max: 8, step: 1, widget: 'dial', label: 'Orbit' },
   pan: { min: 0, max: 1, step: 0.01, widget: 'dial', label: 'Pan' },
-  speed: { min: -4, max: 4, step: 0.1, widget: 'slider', label: 'Speed' },
+  speed: { min: -2, max: 2, step: 0.05, widget: 'slider', label: 'Speed' },
   cps: { min: 0.1, max: 4, step: 0.05, widget: 'dial', label: 'CPS' },
 }
 
 const MOD_CONFIG: Record<string, ParamConfig> = {
-  slow: { min: 0.1, max: 200, step: 0.1, widget: 'dial', label: 'slow' },
-  fast: { min: 0.1, max: 200, step: 0.1, widget: 'dial', label: 'fast' },
-  mul: { min: 0, max: 200, step: 0.1, widget: 'dial', label: 'mul' },
+  slow: { min: 0.1, max: 32, step: 0.1, widget: 'dial', label: 'slow' },
+  fast: { min: 0.1, max: 32, step: 0.1, widget: 'dial', label: 'fast' },
+  mul: { min: 0, max: 10, step: 0.1, widget: 'dial', label: 'mul' },
 }
 
 const DEFAULT_CONFIG: ParamConfig = { min: 0, max: 100, step: 0.1, widget: 'dial', label: '' }
