@@ -86,6 +86,7 @@ const PARAM_CONFIG: Record<string, ParamConfig> = {
   pan: { min: 0, max: 1, step: 0.01, widget: 'dial', label: 'Pan' },
   speed: { min: -2, max: 2, step: 0.05, widget: 'slider', label: 'Speed' },
   cps: { min: 0.1, max: 4, step: 0.05, widget: 'dial', label: 'CPS' },
+  cpm: { min: 20, max: 300, step: 1, widget: 'dial', label: 'CPM' },
 }
 
 const MOD_CONFIG: Record<string, ParamConfig> = {
@@ -580,18 +581,23 @@ export function parseStrudelCode(code: string): ParsedCode {
       continue
     }
 
-    // setcps(N) → global
-    if (getCallName(expr) === 'setcps' && expr.arguments?.length === 1) {
+    // setcps(N) / setcpm(N) → global
+    const callName = getCallName(expr)
+    if ((callName === 'setcps' || callName === 'setcpm') && expr.arguments?.length === 1) {
       const arg = expr.arguments[0]
+      const paramName = callName === 'setcpm' ? 'cpm' : 'cps'
       if (isNumericLiteral(arg)) {
+        const config = paramName === 'cpm'
+          ? { min: 20, max: 300, step: 1, widget: 'dial' as const, label: 'CPM' }
+          : getParamConfig('cps')
         globals.push({
-          name: 'cps',
+          name: paramName,
           value: numericValue(arg),
           valueFrom: arg.start,
           valueTo: arg.end,
           methodFrom: expr.start,
           methodTo: expr.end,
-          config: getParamConfig('cps'),
+          config,
         })
       }
       continue
