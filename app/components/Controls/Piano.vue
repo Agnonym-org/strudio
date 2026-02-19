@@ -198,6 +198,7 @@ function detectLayout(e: KeyboardEvent) {
 
 function onKbDown(e: KeyboardEvent) {
   if (e.repeat) return
+  if (e.metaKey) return // let Cmd shortcuts through (Cmd+A, Cmd+C, etc.)
   const target = e.target as HTMLElement
   const tag = target?.tagName
   if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return
