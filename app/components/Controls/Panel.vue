@@ -170,14 +170,33 @@ async function onToggleParam(param: ParsedParam) {
   if (param.disabled) {
     // Unwrap: remove /* and */
     if (!slice.startsWith('/*') || !slice.endsWith('*/')) return
-    repl.replaceValue(param.methodFrom, param.methodTo, slice.slice(2, -2))
+    const unwrapped = slice.slice(2, -2)
+    repl.replaceValue(param.methodFrom, param.methodTo, unwrapped)
+    param.disabled = false
+    const delta = -4 // removed /* and */
+    param.methodTo += delta
+    param.valueFrom -= 2
+    param.valueTo -= 2
+    if (param.value2From != null) {
+      param.value2From! -= 2
+      param.value2To! -= 2
+    }
+    shiftPositionsAfter(param.methodFrom, delta)
   } else {
     // Wrap with /* */
     repl.replaceValue(param.methodFrom, param.methodTo, `/*${slice}*/`)
+    param.disabled = true
+    const delta = 4 // added /* and */
+    param.methodTo += delta
+    param.valueFrom += 2
+    param.valueTo += 2
+    if (param.value2From != null) {
+      param.value2From! += 2
+      param.value2To! += 2
+    }
+    shiftPositionsAfter(param.methodFrom, delta)
   }
 
-  // Re-parse from scratch for correct positions (avoids fragile offset arithmetic)
-  parsed.value = parseStrudelCode(repl.getCode())
   await repl.evaluate()
 }
 
