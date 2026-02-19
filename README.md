@@ -50,11 +50,13 @@ app/
 ### Param scanning
 
 Click **Scan** to parse the code and generate controls for all numeric parameters. The parser handles:
-- Simple numeric args: `.room(2)`, `.gain(0.5)`
+- Simple numeric args: `.room(2)`, `.gain(0.5)`, complex expressions: `.cpm(120/4)` -> text input
 - Range expressions: `.lpf(sine.range(400,800))` -> single dual-handle range slider
 - Modifiers: `.slow(16)`, `.fast(2)`, `.mul(4)` -> dedicated controls
 - Nested modifiers: `.gain(saw.mul(saw.fast(2)))` -> recursive extraction
-- Stack-aware grouping: each voice in a `stack()` gets its own control group
+- Stack-aware grouping: each voice in a `stack()` gets its own control group; outer methods on stack → globals
+- Callback recursion: params inside `.split()`, `.superimpose()` callbacks are recursively extracted
+- Label names: `gtr:`, `vox:` labels are used in the group title instead of `.s()` sound
 - Layer support: `.layer(x=>x.s("organ").gain(.3), x=>x.s("bass").lpf(200))` -> sub-blocks per layer voice
 - Global effects: `all(x => x.room(.3))` -> params extracted into the Global section
 - Tempo: `setcps(0.5)` and `setcpm(126)` -> global dial
