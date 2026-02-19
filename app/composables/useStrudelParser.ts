@@ -546,6 +546,21 @@ export function parseStrudelCode(code: string): ParsedCode {
       continue
     }
 
+    // all(x => x.room(.3).delay(.2)) → global params
+    if (getCallName(expr) === 'all' && expr.arguments?.length >= 1) {
+      const allArg = expr.arguments[0]
+      if (allArg.type === 'ArrowFunctionExpression') {
+        const { methods: allMethods } = flattenChain(allArg.body, code)
+        for (const m of allMethods) {
+          if (SKIP_METHODS.has(m.name)) continue
+          if (m.args.length >= 1) {
+            analyzeArg(m.name, m.args[0], m.methodFrom, m.methodTo, globals, code)
+          }
+        }
+      }
+      continue
+    }
+
     // setcps(N) → global
     if (getCallName(expr) === 'setcps' && expr.arguments?.length === 1) {
       const arg = expr.arguments[0]
