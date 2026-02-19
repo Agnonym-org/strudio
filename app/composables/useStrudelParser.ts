@@ -114,6 +114,8 @@ const SKIP_METHODS = new Set([
   'sound', 's', 'bank', 'stack', 'note', 'n',
   'mask', 'superimpose', 'sometimes', 'rarely', 'often', 'almostNever', 'almostAlways',
   'jux', 'add', 'ftype', 'scale', 'struct', 'euclid', 'rev', 'hush',
+  'split', 'pickRestart', 'pick', 'withValue', 'fmap', 'anchor', 'voicing',
+  'patt', 'register',
 ])
 
 export const DRUM_SOUNDS = new Set([
@@ -221,6 +223,7 @@ function analyzeArg(
   const parentLabel = parentConfig.label || parentName
   const blockLabel = block || parentLabel
 
+  let handled = false
   for (const sub of subMethods) {
     if (sub.name === 'range' && sub.args.length === 2) {
       const [minNode, maxNode] = sub.args
@@ -239,6 +242,7 @@ function analyzeArg(
           config: rangeConfig,
           block: blockLabel,
         })
+        handled = true
       }
     } else if (sub.name === 'slow' || sub.name === 'fast' || sub.name === 'mul') {
       if (sub.args.length === 1 && isNumericLiteral(sub.args[0])) {
@@ -251,11 +255,27 @@ function analyzeArg(
           config: ensureRange({ ...modConfig, label: sub.name }, value),
           block: blockLabel,
         })
+        handled = true
       } else if (sub.args.length === 1) {
         // Recurse for complex modifier args (e.g. saw.fast(2) inside .mul())
         analyzeArg(`${parentName} ${sub.name}`, sub.args[0], methodFrom, methodTo, params, code, blockLabel)
+        handled = true
       }
     }
+  }
+
+  // Fallback: unrecognized expression → text input (e.g. 120/4, x*2+1)
+  if (!handled && subMethods.length === 0) {
+    const rawText = code.slice(argNode.start, argNode.end)
+    params.push({
+      name: parentName, value: 0,
+      textValue: rawText,
+      valueFrom: argNode.start,
+      valueTo: argNode.end,
+      methodFrom, methodTo,
+      config: { ...parentConfig, widget: 'text' as const, label: parentLabel },
+      block,
+    })
   }
 }
 
@@ -367,6 +387,47 @@ function extractVoices(expr: N, code: string): VoiceInfo[] {
   return [] // not a stack — caller handles as single voice
 }
 
+// ---- Recursive method param extraction ----
+
+/** Extract params from methods, recursing into arrow function callbacks */
+function extractMethodParams(
+  methods: MethodInfo[],
+  params: ParsedParam[],
+  drums: DrumPattern[],
+  code: string,
+  block?: string,
+) {
+  for (const m of methods) {
+    // layer(fn1, fn2) → each arrow fn becomes a named sub-block
+    if (m.name === 'layer') {
+      for (let li = 0; li < m.args.length; li++) {
+        const layerArg = m.args[li]
+        if (layerArg?.type !== 'ArrowFunctionExpression') continue
+        const { head: lHead, methods: lMethods } = flattenChain(layerArg.body, code)
+        const lSound = findSoundFromChain(lHead, lMethods)
+        const blockName = lSound !== 'default' ? lSound : `layer ${li + 1}`
+        drums.push(...extractDrums(lHead))
+        extractMethodParams(lMethods, params, drums, code, blockName)
+      }
+      continue
+    }
+
+    // Normal param extraction
+    if (!SKIP_METHODS.has(m.name) && m.args.length >= 1) {
+      analyzeArg(m.name, m.args[0], m.methodFrom, m.methodTo, params, code, block)
+    }
+
+    // Recurse into arrow function arguments (split, superimpose, etc.)
+    for (const arg of m.args) {
+      if (arg.type === 'ArrowFunctionExpression') {
+        const { head: cbHead, methods: cbMethods } = flattenChain(arg.body, code)
+        drums.push(...extractDrums(cbHead))
+        extractMethodParams(cbMethods, params, drums, code, block)
+      }
+    }
+  }
+}
+
 // ---- Parse a single voice ----
 
 function parseVoiceNode(
@@ -396,33 +457,10 @@ function parseVoiceNode(
   if (bank) sound = sound !== 'default' ? `${sound} (${bank})` : bank
   else if (bankSuffix) sound = sound !== 'default' ? `${sound} (${bankSuffix})` : bankSuffix
 
-  // Extract params from method chain
+  // Extract params from method chain (recursing into arrow function callbacks)
   const params: ParsedParam[] = []
-  const layerDrums: DrumPattern[] = []
-  for (const m of methods) {
-    // layer(fn1, fn2) → each arrow fn becomes a named sub-block
-    if (m.name === 'layer') {
-      for (let li = 0; li < m.args.length; li++) {
-        const layerArg = m.args[li]
-        if (layerArg?.type !== 'ArrowFunctionExpression') continue
-        const { head: lHead, methods: lMethods } = flattenChain(layerArg.body, code)
-        const lSound = findSoundFromChain(lHead, lMethods)
-        const blockName = lSound !== 'default' ? lSound : `layer ${li + 1}`
-        for (const lm of lMethods) {
-          if (SKIP_METHODS.has(lm.name)) continue
-          if (lm.args.length >= 1) {
-            analyzeArg(lm.name, lm.args[0], lm.methodFrom, lm.methodTo, params, code, blockName)
-          }
-        }
-        layerDrums.push(...extractDrums(lHead))
-      }
-      continue
-    }
-    if (SKIP_METHODS.has(m.name)) continue
-    if (m.args.length >= 1) {
-      analyzeArg(m.name, m.args[0], m.methodFrom, m.methodTo, params, code)
-    }
-  }
+  const callbackDrums: DrumPattern[] = []
+  extractMethodParams(methods, params, callbackDrums, code)
 
   // Extract disabled params from block comments within voice range
   const voiceComments = comments.filter(
@@ -455,7 +493,7 @@ function parseVoiceNode(
   }
 
   // Extract drums
-  const drums = [...extractDrums(head), ...layerDrums]
+  const drums = [...extractDrums(head), ...callbackDrums]
 
   return {
     group: {
@@ -491,7 +529,11 @@ export function parseStrudelCode(code: string): ParsedCode {
   const varGroups = new Map<string, ParsedGroup>()
 
   for (let stmt of ast.body) {
-    // Unwrap labeled statements (p1: expr, p2: expr)
+    // Capture label name before unwrapping (gtr:, vox:, p1:, etc.)
+    let stmtLabel: string | null = null
+    if (stmt.type === 'LabeledStatement') {
+      stmtLabel = stmt.label.name
+    }
     while (stmt.type === 'LabeledStatement') stmt = stmt.body
 
     // --- VariableDeclaration: let/const/var ---
@@ -606,8 +648,17 @@ export function parseStrudelCode(code: string): ParsedCode {
     // Try to split into voices via stack()
     const voices = extractVoices(expr, code)
     if (voices.length > 0) {
+      // Extract outer methods on the stack itself → globals (e.g. stack(...).cpm(120).room(0.3))
+      const { methods: outerMethods } = flattenChain(expr, code)
+      const outerParams: ParsedParam[] = []
+      const outerDrums: DrumPattern[] = []
+      extractMethodParams(outerMethods, outerParams, outerDrums, code)
+      globals.push(...outerParams)
+      drums.push(...outerDrums)
+
       for (const voice of voices) {
         const result = parseVoiceNode(voice.node, code, comments, voice.bankSuffix)
+        if (stmtLabel) result.group.sound = stmtLabel
         if (result.group.params.length > 0 || result.drums.length > 0) {
           groups.push(result.group)
         }
@@ -616,6 +667,7 @@ export function parseStrudelCode(code: string): ParsedCode {
     } else {
       // No stack — treat the expression as a single voice
       const result = parseVoiceNode(expr, code, comments)
+      if (stmtLabel) result.group.sound = stmtLabel
       if (result.group.params.length > 0 || result.drums.length > 0) {
         groups.push(result.group)
       }
