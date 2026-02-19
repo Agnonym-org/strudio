@@ -32,10 +32,7 @@ async function scan() {
   }
 
   parsed.value = parseStrudelCode(code)
-  // Auto-show instruments based on detected content
   if (parsed.value) {
-    showPiano.value = parsed.value.groups.length > 0
-    showDrums.value = parsed.value.drums.length > 0
     // Open all accordion panels by default
     openPanels.value = [
       ...(parsed.value.globals.length ? ['global'] : []),
@@ -408,7 +405,7 @@ defineExpose({ scan })
     <!-- Instruments (sticky bottom) -->
     <div class="border-t border-navy-800 p-3 flex-shrink-0">
       <!-- Instrument panels (conditional) -->
-      <div v-if="showPiano || showDrums" class="flex gap-4 items-end mb-3">
+      <div v-if="showPiano || showDrums" class="flex gap-4 items-end mb-3 px-3">
         <div v-if="showPiano" class="flex-1 min-w-0">
           <ControlsPiano
             ref="pianoRef"
