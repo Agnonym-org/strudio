@@ -172,6 +172,9 @@ Known parameters are mapped to musically useful ranges for mixing:
 | `delayfeedback` | Slider | 0 - 0.9        | 1.0 = infinite feedback      |
 | `pan`       | Dial   | 0 - 1              | 0 = L, 0.5 = C, 1 = R       |
 | `speed`     | Slider | -2 - 2             | Playback speed / pitch       |
+| `distort`   | Dial   | 0 - 1              | Soft distortion amount       |
+| `crush`     | Dial   | 1 - 16             | Bit depth reduction          |
+| `coarse`    | Dial   | 1 - 32             | Sample rate reduction        |
 | `cps`       | Dial   | 0.1 - 4            | Cycles per second            |
 
 Modifier controls: `slow` / `fast` (Dial, 0.1 - 32), `mul` (Dial, 0 - 10).
