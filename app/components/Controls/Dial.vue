@@ -20,10 +20,26 @@ const displayValue = computed(() => formatValue(props.modelValue, props.step))
 const emit = defineEmits<{
   'update:modelValue': [value: number]
 }>()
+
+function onKeyDown(e: KeyboardEvent) {
+  if (e.key === 'ArrowUp' || e.key === 'ArrowRight') {
+    e.preventDefault()
+    emit('update:modelValue', Math.min(props.max, +(props.modelValue + props.step).toFixed(10)))
+  } else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') {
+    e.preventDefault()
+    emit('update:modelValue', Math.max(props.min, +(props.modelValue - props.step).toFixed(10)))
+  }
+}
 </script>
 
 <template>
-  <div class="flex flex-col items-center gap-1">
+  <div
+    class="flex flex-col items-center gap-1 focus:outline-none"
+    tabindex="0"
+    @keydown="onKeyDown"
+    @mouseenter="($event.currentTarget as HTMLElement).focus()"
+    @mouseleave="($event.currentTarget as HTMLElement).blur()"
+  >
     <Knob
       :model-value="modelValue"
       :min="min"

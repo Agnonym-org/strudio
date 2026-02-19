@@ -21,10 +21,26 @@ const displayValue = computed(() => formatValue(props.modelValue, props.step))
 const emit = defineEmits<{
   'update:modelValue': [value: number]
 }>()
+
+function onKeyDown(e: KeyboardEvent) {
+  if (e.key === 'ArrowUp' || e.key === 'ArrowRight') {
+    e.preventDefault()
+    emit('update:modelValue', Math.min(props.max, +(props.modelValue + props.step).toFixed(10)))
+  } else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') {
+    e.preventDefault()
+    emit('update:modelValue', Math.max(props.min, +(props.modelValue - props.step).toFixed(10)))
+  }
+}
 </script>
 
 <template>
-  <div class="flex flex-col items-center gap-1 min-w-[48px]">
+  <div
+    class="flex flex-col items-center gap-1 min-w-[48px] focus:outline-none"
+    tabindex="0"
+    @keydown="onKeyDown"
+    @mouseenter="($event.currentTarget as HTMLElement).focus()"
+    @mouseleave="($event.currentTarget as HTMLElement).blur()"
+  >
     <span class="text-xs text-orchid-400 truncate max-w-[80px]">{{ label }}</span>
     <PvSlider
       :model-value="modelValue"
