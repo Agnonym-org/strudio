@@ -83,7 +83,7 @@ const shortcutMap = computed(() => {
   return map
 })
 
-// ---- Visible keys ----
+// ---- Visible keys (shift with octave) ----
 interface PianoKey {
   midi: number
   black: boolean
@@ -91,9 +91,12 @@ interface PianoKey {
   shortcut: string
 }
 
+const effectiveLow = computed(() => props.lowNote + octaveOffset.value * 12)
+const effectiveHigh = computed(() => props.highNote + octaveOffset.value * 12)
+
 const keys = computed<PianoKey[]>(() => {
   const result: PianoKey[] = []
-  for (let midi = props.lowNote; midi <= props.highNote; midi++) {
+  for (let midi = effectiveLow.value; midi <= effectiveHigh.value; midi++) {
     result.push({
       midi,
       black: isBlack(midi),
@@ -122,15 +125,15 @@ const BLACK_POSITIONS: Record<number, number> = {
 function blackKeyLeft(midi: number): number {
   const semitone = midi % 12
   const octaveStart = midi - semitone
-  // Count white keys from lowNote to the start of this octave
+  const low = effectiveLow.value
+  // Count white keys from visible start to this octave's C
   let whitesBefore = 0
-  for (let m = props.lowNote; m < octaveStart; m++) {
+  for (let m = low; m < octaveStart; m++) {
     if (!isBlack(m)) whitesBefore++
   }
-  // If lowNote is mid-octave, adjust
-  if (octaveStart < props.lowNote) {
-    // Count whites we missed
-    for (let m = octaveStart; m < props.lowNote; m++) {
+  // If visible start is mid-octave, adjust
+  if (octaveStart < low) {
+    for (let m = octaveStart; m < low; m++) {
       if (!isBlack(m)) whitesBefore--
     }
   }
