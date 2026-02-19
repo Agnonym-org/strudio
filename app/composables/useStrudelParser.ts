@@ -6,7 +6,7 @@ export interface ParamConfig {
   min: number
   max: number
   step: number
-  widget: 'dial' | 'slider' | 'range'
+  widget: 'dial' | 'slider' | 'range' | 'text'
   label: string
 }
 
@@ -22,6 +22,7 @@ export interface ParsedParam {
   methodFrom: number
   methodTo: number
   config: ParamConfig
+  textValue?: string
   block?: string
   disabled?: boolean
 }
@@ -458,10 +459,80 @@ export function parseStrudelCode(code: string): ParsedCode {
   const globals: ParsedParam[] = []
   const groups: ParsedGroup[] = []
   const drums: DrumPattern[] = []
+  const varGroups = new Map<string, ParsedGroup>()
 
   for (const stmt of ast.body) {
+    // --- VariableDeclaration: let/const/var ---
+    if (stmt.type === 'VariableDeclaration') {
+      for (const decl of stmt.declarations) {
+        if (!decl.init || decl.id?.type !== 'Identifier') continue
+        const varName: string = decl.id.name
+        const init = decl.init
+
+        // Simple numeric → global param (dial)
+        if (isNumericLiteral(init)) {
+          const value = numericValue(init)
+          const config: ParamConfig = {
+            min: 0,
+            max: Math.max(100, value * 2),
+            step: value % 1 === 0 ? 1 : 0.01,
+            widget: 'dial',
+            label: varName,
+          }
+          globals.push({
+            name: varName, value,
+            valueFrom: init.start, valueTo: init.end,
+            methodFrom: stmt.start, methodTo: stmt.end,
+            config: ensureRange(config, value),
+          })
+          continue
+        }
+
+        // Method chain → treat as a voice
+        const { methods } = flattenChain(init, code)
+        if (methods.length > 0) {
+          const result = parseVoiceNode(init, code, comments)
+          result.group.sound = varName
+          varGroups.set(varName, result.group)
+          if (result.group.params.length > 0 || result.drums.length > 0) {
+            groups.push(result.group)
+          }
+          drums.push(...result.drums)
+          continue
+        }
+
+        // Complex expression → global param (text input)
+        globals.push({
+          name: varName, value: 0,
+          textValue: code.slice(init.start, init.end),
+          valueFrom: init.start, valueTo: init.end,
+          methodFrom: stmt.start, methodTo: stmt.end,
+          config: { min: 0, max: 100, step: 0.1, widget: 'text' as const, label: varName },
+        })
+      }
+      continue
+    }
+
+    // --- ExpressionStatement ---
     if (stmt.type !== 'ExpressionStatement') continue
     const expr = stmt.expression
+
+    // Variable reference: varName.method1().method2()
+    const exprChain = flattenChain(expr, code)
+    if (exprChain.head.type === 'Identifier' && varGroups.has(exprChain.head.name)) {
+      const existingGroup = varGroups.get(exprChain.head.name)!
+      for (const m of exprChain.methods) {
+        if (SKIP_METHODS.has(m.name)) continue
+        if (m.args.length >= 1) {
+          analyzeArg(m.name, m.args[0], m.methodFrom, m.methodTo, existingGroup.params, code)
+        }
+      }
+      existingGroup.voiceTo = Math.max(existingGroup.voiceTo, expr.end)
+      if (!groups.includes(existingGroup) && existingGroup.params.length > 0) {
+        groups.push(existingGroup)
+      }
+      continue
+    }
 
     // setcps(N) → global
     if (getCallName(expr) === 'setcps' && expr.arguments?.length === 1) {
