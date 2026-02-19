@@ -533,7 +533,7 @@ export function parseStrudelCode(code: string): ParsedCode {
   for (let stmt of ast.body) {
     // Capture label name before unwrapping (gtr:, vox:, p1:, etc.)
     let stmtLabel: string | null = null
-    if (stmt.type === 'LabeledStatement') {
+    if (stmt.type === 'LabeledStatement' && stmt.label.name !== '$') {
       stmtLabel = stmt.label.name
     }
     while (stmt.type === 'LabeledStatement') stmt = stmt.body
