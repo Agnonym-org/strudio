@@ -124,6 +124,21 @@ async function onRangeChange(param: ParsedParam, values: [number, number]) {
   await repl.evaluate()
 }
 
+// --- Text param change ---
+
+async function onTextChange(param: ParsedParam, newText: string) {
+  const lengthDiff = newText.length - (param.valueTo - param.valueFrom)
+
+  repl.replaceValue(param.valueFrom, param.valueTo, newText)
+
+  param.textValue = newText
+  param.valueTo = param.valueFrom + newText.length
+
+  shiftPositionsAfter(param.valueFrom, lengthDiff)
+
+  await repl.evaluate()
+}
+
 // --- Mute voice: append/remove .gain(0) ---
 
 const MUTE_SUFFIX = '.gain(0)'
@@ -320,6 +335,7 @@ defineExpose({ scan })
                 :params="parsed.globals"
                 @param-change="onParamChange"
                 @range-change="onRangeChange"
+                @text-change="onTextChange"
                 @toggle-param="onToggleParam"
               />
             </AccordionContent>
@@ -355,6 +371,7 @@ defineExpose({ scan })
                 :params="group.params"
                 @param-change="onParamChange"
                 @range-change="onRangeChange"
+                @text-change="onTextChange"
                 @toggle-param="onToggleParam"
               />
             </AccordionContent>

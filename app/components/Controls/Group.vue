@@ -8,6 +8,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   paramChange: [param: ParsedParam, value: number]
   rangeChange: [param: ParsedParam, values: [number, number]]
+  textChange: [param: ParsedParam, value: string]
   toggleParam: [param: ParsedParam]
 }>()
 
@@ -68,6 +69,12 @@ const layout = computed(() => {
             :model-value="[param.value, param.value2 ?? param.value]"
             @update:model-value="emit('rangeChange', param, $event)"
           />
+          <ControlsTextInput
+            v-if="param.config.widget === 'text'"
+            :label="param.config.label || param.name"
+            :model-value="param.textValue ?? ''"
+            @update:model-value="emit('textChange', param, $event)"
+          />
         </div>
       </template>
     </div>
@@ -116,6 +123,12 @@ const layout = computed(() => {
                 :step="param.config.step"
                 :model-value="[param.value, param.value2 ?? param.value]"
                 @update:model-value="emit('rangeChange', param, $event)"
+              />
+              <ControlsTextInput
+                v-if="param.config.widget === 'text'"
+                :label="param.config.label || param.name"
+                :model-value="param.textValue ?? ''"
+                @update:model-value="emit('textChange', param, $event)"
               />
             </div>
           </template>
