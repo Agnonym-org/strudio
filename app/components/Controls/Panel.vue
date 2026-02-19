@@ -319,6 +319,20 @@ defineExpose({ scan })
   <div class="flex flex-col h-full">
     <!-- Scrollable controls -->
     <div class="flex-1 min-h-0 overflow-y-auto p-3 flex flex-col gap-3">
+      <!-- Getting started guide (before first scan) -->
+      <div v-if="!parsed" class="flex flex-col gap-4 text-navy-300 text-sm leading-relaxed">
+        <h3 class="text-orchid-300 font-mono text-base">Getting started</h3>
+        <ol class="list-decimal list-inside flex flex-col gap-2">
+          <li><span class="text-orchid-200">Write</span> your music in the editor using Strudel syntax</li>
+          <li>Hit <span class="text-orchid-200">Scan</span> to detect parameters and generate controls</li>
+          <li>Press <span class="text-orchid-200">Play</span> <span class="text-navy-500">(Ctrl+Enter)</span> and enjoy</li>
+        </ol>
+        <div class="border-t border-navy-800 pt-3 flex flex-col gap-2">
+          <p class="text-navy-400 text-xs">Tweak knobs, sliders and inputs — the code updates in real-time and the sound follows.</p>
+          <p class="text-navy-400 text-xs">Use <span class="text-orchid-400">Draft</span> mode to tweak freely without triggering sound, then <span class="text-orchid-400">Apply</span> all changes at once.</p>
+        </div>
+      </div>
+
       <template v-if="parsed">
         <Accordion
           v-if="parsed.globals.length || parsed.groups.length"
