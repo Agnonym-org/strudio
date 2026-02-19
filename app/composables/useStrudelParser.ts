@@ -71,6 +71,10 @@ const PARAM_CONFIG: Record<string, ParamConfig> = {
   decay: { min: 0, max: 2, step: 0.01, widget: 'slider', label: 'Decay' },
   sustain: { min: 0, max: 1, step: 0.01, widget: 'slider', label: 'Sustain' },
   release: { min: 0, max: 2, step: 0.01, widget: 'slider', label: 'Release' },
+  // Distortion
+  distort: { min: 0, max: 1, step: 0.01, widget: 'dial', label: 'Distort' },
+  crush: { min: 1, max: 16, step: 1, widget: 'dial', label: 'Bit Crush' },
+  coarse: { min: 1, max: 32, step: 1, widget: 'dial', label: 'Coarse' },
   // Effects
   room: { min: 0, max: 1.5, step: 0.05, widget: 'dial', label: 'Room' },
   roomsize: { min: 0, max: 1.5, step: 0.05, widget: 'dial', label: 'Room Size' },
@@ -466,7 +470,10 @@ export function parseStrudelCode(code: string): ParsedCode {
   const drums: DrumPattern[] = []
   const varGroups = new Map<string, ParsedGroup>()
 
-  for (const stmt of ast.body) {
+  for (let stmt of ast.body) {
+    // Unwrap labeled statements (p1: expr, p2: expr)
+    while (stmt.type === 'LabeledStatement') stmt = stmt.body
+
     // --- VariableDeclaration: let/const/var ---
     if (stmt.type === 'VariableDeclaration') {
       for (const decl of stmt.declarations) {
