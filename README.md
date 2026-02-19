@@ -103,6 +103,10 @@ Mute/unmute individual voices by appending/removing `.gain(0)` at the end of the
 - Numpad shortcuts: 0=kick, 1=snare, 2=rim, 3=clap, 4-6=toms, 7=crash, 8=ride, 9=open HH, .=closed HH
 - **Combo mode** (Tab): build a `[bd sd hh]` simultaneous group
 
+### Getting started guide
+
+Before the first scan, the control panel displays a short onboarding guide explaining the workflow: Write -> Scan -> Play, with a note about Draft mode.
+
 ### Smart instrument visibility
 
 Piano and drum pads are hidden by default. On scan:
@@ -173,6 +177,10 @@ Known parameters are mapped to musically useful ranges for mixing:
 Modifier controls: `slow` / `fast` (Dial, 0.1 - 32), `mul` (Dial, 0 - 10).
 Unknown params get a default Dial (0 - 100). Ranges auto-expand if the current value exceeds them.
 Variables get auto-detected ranges based on their value type (numeric -> dial, expression -> text input).
+
+## Strudel compatibility
+
+The app registers missing Pattern methods (`theme`, `fontFamily`) not yet published on npm via `registerControl` at startup. This prevents crashes when evaluating code that uses methods from the latest Strudel repo.
 
 ## Setup
 
