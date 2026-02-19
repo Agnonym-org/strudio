@@ -265,7 +265,9 @@ function analyzeArg(
   }
 
   // Fallback: unrecognized expression → text input (e.g. 120/4, x*2+1)
-  if (!handled && subMethods.length === 0) {
+  // Skip variable refs, strings, template literals, arrays — not useful as editable params
+  const SKIP_ARG_TYPES = new Set(['Identifier', 'TemplateLiteral', 'TaggedTemplateExpression', 'ArrayExpression', 'MemberExpression'])
+  if (!handled && subMethods.length === 0 && !SKIP_ARG_TYPES.has(argNode.type)) {
     const rawText = code.slice(argNode.start, argNode.end)
     params.push({
       name: parentName, value: 0,
