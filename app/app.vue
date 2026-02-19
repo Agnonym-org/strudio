@@ -9,9 +9,14 @@ const viewMode = ref<'writer' | 'mix'>('mix')
 const repl = useRepl(editorEl)
 provide(REPL_KEY, repl)
 
-// Load strudel web component client-side
+// Load strudel web component client-side + register missing controls
 onMounted(async () => {
   await import('@strudel/repl/repl-component.mjs')
+  // Register controls present in latest Strudel repo but not yet published on npm
+  // @ts-expect-error no types for @strudel/core
+  const { registerControl } = await import('@strudel/core')
+  registerControl('theme')
+  registerControl('fontFamily')
 })
 
 function onScan() {
