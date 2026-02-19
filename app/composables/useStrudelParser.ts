@@ -397,7 +397,26 @@ function parseVoiceNode(
 
   // Extract params from method chain
   const params: ParsedParam[] = []
+  const layerDrums: DrumPattern[] = []
   for (const m of methods) {
+    // layer(fn1, fn2) → each arrow fn becomes a named sub-block
+    if (m.name === 'layer') {
+      for (let li = 0; li < m.args.length; li++) {
+        const layerArg = m.args[li]
+        if (layerArg?.type !== 'ArrowFunctionExpression') continue
+        const { head: lHead, methods: lMethods } = flattenChain(layerArg.body, code)
+        const lSound = findSoundFromChain(lHead, lMethods)
+        const blockName = lSound !== 'default' ? lSound : `layer ${li + 1}`
+        for (const lm of lMethods) {
+          if (SKIP_METHODS.has(lm.name)) continue
+          if (lm.args.length >= 1) {
+            analyzeArg(lm.name, lm.args[0], lm.methodFrom, lm.methodTo, params, code, blockName)
+          }
+        }
+        layerDrums.push(...extractDrums(lHead))
+      }
+      continue
+    }
     if (SKIP_METHODS.has(m.name)) continue
     if (m.args.length >= 1) {
       analyzeArg(m.name, m.args[0], m.methodFrom, m.methodTo, params, code)
@@ -435,7 +454,7 @@ function parseVoiceNode(
   }
 
   // Extract drums
-  const drums = extractDrums(head)
+  const drums = [...extractDrums(head), ...layerDrums]
 
   return {
     group: {
@@ -596,6 +615,14 @@ export function parseStrudelCode(code: string): ParsedCode {
       }
       drums.push(...result.drums)
     }
+  }
+
+  // Uniform naming: "Pattern 1", "Pattern 2 · gm_choir_aahs", ...
+  for (let i = 0; i < groups.length; i++) {
+    const g = groups[i]!
+    g.sound = g.sound === 'default'
+      ? `Pattern ${i + 1}`
+      : `Pattern ${i + 1} · ${g.sound}`
   }
 
   return { globals, groups, drums }
