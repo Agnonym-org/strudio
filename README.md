@@ -55,6 +55,9 @@ Click **Scan** to parse the code and generate controls for all numeric parameter
 - Modifiers: `.slow(16)`, `.fast(2)`, `.mul(4)` -> dedicated controls
 - Nested modifiers: `.gain(saw.mul(saw.fast(2)))` -> recursive extraction
 - Stack-aware grouping: each voice in a `stack()` gets its own control group
+- Layer support: `.layer(x=>x.s("organ").gain(.3), x=>x.s("bass").lpf(200))` -> sub-blocks per layer voice
+- Global effects: `all(x => x.room(.3))` -> params extracted into the Global section
+- Tempo: `setcps(0.5)` and `setcpm(126)` -> global dial
 
 ### Variable support
 
@@ -74,6 +77,10 @@ The parser handles `let` / `const` / `var` declarations:
 ### Block sub-grouping
 
 Complex expressions like `.lpq(cosine.range(6,14).slow(3))` generate a visual block named "LP Resonance" containing min, max, and slow controls together.
+
+### Group naming
+
+Groups are uniformly named "Pattern 1", "Pattern 2", etc. When a `.s()` sound is detected, the name includes it: "Pattern 1 · gm_drawbar_organ". Variable-based groups use the variable name instead.
 
 ### In-place editing
 
@@ -176,6 +183,7 @@ Known parameters are mapped to musically useful ranges for mixing:
 | `crush`     | Dial   | 1 - 16             | Bit depth reduction          |
 | `coarse`    | Dial   | 1 - 32             | Sample rate reduction        |
 | `cps`       | Dial   | 0.1 - 4            | Cycles per second            |
+| `cpm`       | Dial   | 20 - 300           | Cycles per minute (BPM)      |
 
 Modifier controls: `slow` / `fast` (Dial, 0.1 - 32), `mul` (Dial, 0 - 10).
 Unknown params get a default Dial (0 - 100). Ranges auto-expand if the current value exceeds them.
