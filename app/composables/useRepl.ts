@@ -24,20 +24,38 @@ export function useRepl(editorEl: Ref<HTMLElement | undefined>): Repl {
   const draftSnapshot = ref<string | null>(null)
 
   // strudel-editor web component: .editor = StrudelMirror, .editor.editor = CodeMirror EditorView
-  const strudelMirror = computed(() => (editorEl.value as any)?.editor)
-  const cm = computed(() => strudelMirror.value?.editor)
+  // These are native DOM properties (not Vue-reactive), so we use a polling watcher.
+  let strudelMirror: any = null
+  let cmInstance: any = null
+  let pollTimer: ReturnType<typeof setInterval> | null = null
 
-  const interval = setInterval(() => {
-    if (cm.value) {
-      isReady.value = true
-      clearInterval(interval)
+  function startPolling() {
+    stopPolling()
+    isReady.value = false
+    pollTimer = setInterval(() => {
+      strudelMirror = (editorEl.value as any)?.editor ?? null
+      cmInstance = strudelMirror?.editor ?? null
+      if (cmInstance) {
+        isReady.value = true
+        stopPolling()
+      }
+    }, 100)
+  }
+
+  function stopPolling() {
+    if (pollTimer != null) {
+      clearInterval(pollTimer)
+      pollTimer = null
     }
-  }, 100)
+  }
 
-  onUnmounted(() => clearInterval(interval))
+  // Start polling immediately, and restart when editorEl changes (HMR, mode switch)
+  startPolling()
+  watch(editorEl, () => startPolling())
+  onUnmounted(() => stopPolling())
 
   function getCode(): string {
-    return cm.value?.state.doc.toString() ?? ''
+    return cmInstance?.state.doc.toString() ?? ''
   }
 
   async function evaluate() {
@@ -45,17 +63,17 @@ export function useRepl(editorEl: Ref<HTMLElement | undefined>): Repl {
       hasDraftChanges.value = true
       return
     }
-    await strudelMirror.value?.evaluate()
+    await strudelMirror?.evaluate()
     isPlaying.value = true
   }
 
   function stop() {
-    strudelMirror.value?.repl?.stop()
+    strudelMirror?.repl?.stop()
     isPlaying.value = false
   }
 
   function replaceValue(from: number, to: number, newValue: string) {
-    cm.value?.dispatch({
+    cmInstance?.dispatch({
       changes: { from, to, insert: newValue },
     })
   }
@@ -70,15 +88,15 @@ export function useRepl(editorEl: Ref<HTMLElement | undefined>): Repl {
     draftMode.value = false
     draftSnapshot.value = null
     hasDraftChanges.value = false
-    await strudelMirror.value?.evaluate()
+    await strudelMirror?.evaluate()
     isPlaying.value = true
   }
 
   function discardDraft() {
     if (draftSnapshot.value != null) {
       const snapshot = draftSnapshot.value
-      cm.value?.dispatch({
-        changes: { from: 0, to: cm.value.state.doc.length, insert: snapshot },
+      cmInstance?.dispatch({
+        changes: { from: 0, to: cmInstance.state.doc.length, insert: snapshot },
       })
     }
     draftMode.value = false
