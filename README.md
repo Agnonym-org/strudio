@@ -116,12 +116,15 @@ Mute/unmute individual voices by appending/removing `.gain(0)` at the end of the
 
 Before the first scan, the control panel displays a short onboarding guide explaining the workflow: Write -> Scan -> Play, with a note about Draft mode.
 
+### Hover keyboard control
+
+All controls (Dial, Slider, RangeSlider) respond to arrow keys on hover — no click required:
+- **Dial / Slider**: `Arrow Up/Right` = increment, `Arrow Down/Left` = decrement (by step)
+- **RangeSlider**: `Arrow Up` = raise the high value, `Arrow Down` = lower the low value (widens the range)
+
 ### Smart instrument visibility
 
-Piano and drum pads are hidden by default. On scan:
-- Melodic voices detected -> Piano auto-shown
-- Drum patterns detected -> Drum pad auto-shown
-- Manual toggle via buttons at the bottom
+Piano and drum pads are hidden by default, with manual toggle via buttons at the bottom.
 
 ## Data flow
 
@@ -155,7 +158,7 @@ Scan -> parseStrudelCode(code) -> { globals, groups[], drums[] }
 | Letter keys       | Piano notes          |
 | `Shift+key`       | Sharp (#)            |
 | `Ctrl+key`        | Flat (b)             |
-| `Arrow Up/Down`   | Octave shift         |
+| `Arrow Up/Down`   | Octave shift (piano) / tweak value (controls on hover) |
 | `Numpad 0-9, .`   | Drum pads            |
 | `Tab`             | Chord / Combo mode   |
 
