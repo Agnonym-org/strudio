@@ -36,7 +36,7 @@ const layout = computed(() => {
       <template v-for="param in layout.loose" :key="param.name + param.valueFrom">
         <div class="relative group/param" :class="{ 'opacity-30': param.disabled }">
           <button
-            class="absolute -top-1 -right-1 z-10 text-[9px] w-3.5 h-3.5 rounded-full bg-navy-800 text-navy-400 hover:bg-navy-700 hover:text-navy-200 opacity-0 group-hover/param:opacity-100 transition-opacity flex items-center justify-center"
+            class="absolute -top-1 -right-1 z-10 text-[9px] w-3.5 h-3.5 rounded-full bg-navy-800 text-navy-400 hover:bg-navy-700 hover:text-navy-200 lg:opacity-0 lg:group-hover/param:opacity-100 transition-opacity flex items-center justify-center"
             :title="param.disabled ? 'Enable' : 'Disable'"
             @click="emit('toggleParam', param)"
           >
@@ -91,7 +91,7 @@ const layout = computed(() => {
           <template v-for="param in blockParams" :key="param.name + param.valueFrom">
             <div class="relative group/param" :class="{ 'opacity-30': param.disabled }">
               <button
-                class="absolute -top-1 -right-1 z-10 text-[9px] w-3.5 h-3.5 rounded-full bg-navy-800 text-navy-400 hover:bg-navy-700 hover:text-navy-200 opacity-0 group-hover/param:opacity-100 transition-opacity flex items-center justify-center"
+                class="absolute -top-1 -right-1 z-10 text-[9px] w-3.5 h-3.5 rounded-full bg-navy-800 text-navy-400 hover:bg-navy-700 hover:text-navy-200 lg:opacity-0 lg:group-hover/param:opacity-100 transition-opacity flex items-center justify-center"
                 :title="param.disabled ? 'Enable' : 'Disable'"
                 @click="emit('toggleParam', param)"
               >
