@@ -61,45 +61,54 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
       >
     </button>
     <button
-      class="px-3 py-1 rounded text-sm"
+      v-tooltip.bottom="repl.isPlaying.value ? 'Update (Ctrl+Enter)' : 'Play (Ctrl+Enter)'"
+      class="h-7 rounded flex items-center justify-center gap-1.5 transition-colors w-8 lg:w-auto lg:px-3"
       :class="repl.isPlaying.value ? 'bg-magenta-500 text-white' : 'bg-navy-800 text-navy-200 hover:bg-navy-700'"
       @click="repl.evaluate()"
     >
-      Play
+      <img :src="`/assets/icon/${repl.isPlaying.value ? 'action-update' : 'action-play'}.svg`" alt="" class="w-4 h-4 shrink-0 lg:hidden">
+      <span class="hidden lg:inline text-sm">{{ repl.isPlaying.value ? 'Update' : 'Play' }}</span>
     </button>
     <button
-      class="px-3 py-1 bg-navy-800 hover:bg-navy-700 text-navy-200 rounded text-sm"
+      v-tooltip.bottom="'Stop (Ctrl+.)'"
+      class="h-7 rounded flex items-center justify-center gap-1.5 bg-navy-800 hover:bg-navy-700 text-navy-200 transition-colors w-8 lg:w-auto lg:px-3"
       @click="repl.stop()"
     >
-      Stop
+      <img src="/assets/icon/action-stop.svg" alt="" class="w-4 h-4 shrink-0 lg:hidden">
+      <span class="hidden lg:inline text-sm">Stop</span>
     </button>
     <button
       v-if="isMix"
-      class="px-3 py-1 bg-cyan-600 hover:bg-cyan-500 text-white rounded text-sm"
+      v-tooltip.bottom="'Scan controls'"
+      class="h-7 rounded flex items-center justify-center gap-1.5 bg-cyan-600 hover:bg-cyan-500 text-white transition-colors w-8 lg:w-auto lg:px-3"
       @click="emit('scan')"
     >
-      Scan
+      <img src="/assets/icon/action-scan.svg" alt="" class="w-4 h-4 shrink-0 lg:hidden">
+      <span class="hidden lg:inline text-sm">Scan</span>
     </button>
     <button
       v-if="isMix"
-      class="px-3 py-1 rounded text-sm transition-colors"
+      v-tooltip.bottom="repl.draftMode.value ? 'Apply draft (Ctrl+D)' : 'Enter draft mode (Ctrl+D)'"
+      class="relative h-7 rounded flex items-center justify-center gap-1.5 transition-colors w-8 lg:w-auto lg:px-3"
       :class="repl.draftMode.value
         ? 'bg-magenta-700 hover:bg-magenta-600 text-white'
         : 'bg-navy-800 text-navy-200 hover:bg-navy-700'"
       @click="toggleDraft"
     >
-      {{ repl.draftMode.value ? 'Apply' : 'Draft' }}
-      <span v-if="repl.draftMode.value && repl.hasDraftChanges.value" class="ml-1 text-xs">&#9679;</span>
+      <img :src="`/assets/icon/${repl.draftMode.value ? 'action-apply' : 'action-draft'}.svg`" alt="" class="w-4 h-4 shrink-0 lg:hidden">
+      <span class="hidden lg:inline text-sm">{{ repl.draftMode.value ? 'Apply' : 'Draft' }}</span>
+      <span v-if="repl.draftMode.value && repl.hasDraftChanges.value" class="lg:hidden absolute -top-1 -right-1 w-2 h-2 rounded-full bg-magenta-400" />
+      <span v-if="repl.draftMode.value && repl.hasDraftChanges.value" class="hidden lg:inline text-xs">&#9679;</span>
     </button>
     <button
       v-if="repl.draftMode.value && isMix"
-      class="px-2 py-1 rounded text-sm bg-navy-800 text-navy-400 hover:text-magenta-400 hover:bg-navy-700 transition-colors"
-      title="Discard draft changes"
+      v-tooltip.bottom="'Discard draft'"
+      class="h-7 rounded flex items-center justify-center gap-1.5 bg-navy-800 text-navy-400 hover:text-magenta-400 hover:bg-navy-700 transition-colors w-8 lg:w-auto lg:px-2"
       @click="repl.discardDraft()"
     >
-      &#10005;
+      <img src="/assets/icon/action-discard.svg" alt="" class="w-4 h-4 shrink-0">
     </button>
-    <span class="text-xs text-navy-400 ml-2">
+    <span class="hidden lg:inline text-xs text-navy-400 ml-2">
       Ctrl+Enter: play &middot; Ctrl+. : stop
     </span>
     <div class="ml-auto flex items-center gap-2">
