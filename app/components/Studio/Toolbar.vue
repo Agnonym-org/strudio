@@ -27,11 +27,11 @@ function toggleDraft() {
 }
 
 function onKeydown(e: KeyboardEvent) {
-  const mod = e.metaKey || e.ctrlKey
+  const mod = e.ctrlKey
   if (mod && e.key === 'Enter') {
     e.preventDefault()
     repl.evaluate()
-  } else if (mod && e.key === '.') {
+  } else if (mod && (e.key === '.' || e.code === 'NumpadDecimal')) {
     e.preventDefault()
     repl.stop()
   } else if (mod && e.key === 'd') {
