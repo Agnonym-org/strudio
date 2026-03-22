@@ -171,30 +171,30 @@ async function onToggleParam(param: ParsedParam) {
     // Unwrap: remove /* and */
     if (!slice.startsWith('/*') || !slice.endsWith('*/')) return
     const unwrapped = slice.slice(2, -2)
-    repl.replaceValue(param.methodFrom, param.methodTo, unwrapped)
+    const origMethodTo = param.methodTo
+    repl.replaceValue(param.methodFrom, origMethodTo, unwrapped)
     param.disabled = false
     const delta = -4 // removed /* and */
-    param.methodTo += delta
     param.valueFrom -= 2
     param.valueTo -= 2
     if (param.value2From != null) {
       param.value2From! -= 2
       param.value2To! -= 2
     }
-    shiftPositionsAfter(param.methodFrom, delta)
+    shiftPositionsAfter(origMethodTo - 1, delta)
   } else {
     // Wrap with /* */
-    repl.replaceValue(param.methodFrom, param.methodTo, `/*${slice}*/`)
+    const origMethodTo = param.methodTo
+    repl.replaceValue(param.methodFrom, origMethodTo, `/*${slice}*/`)
     param.disabled = true
     const delta = 4 // added /* and */
-    param.methodTo += delta
     param.valueFrom += 2
     param.valueTo += 2
     if (param.value2From != null) {
       param.value2From! += 2
       param.value2To! += 2
     }
-    shiftPositionsAfter(param.methodFrom, delta)
+    shiftPositionsAfter(origMethodTo - 1, delta)
   }
 
   await repl.evaluate()
