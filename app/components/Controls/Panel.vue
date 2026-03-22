@@ -42,8 +42,13 @@ async function scan() {
 }
 
 function toggleInstrument(inst: 'piano' | 'drums') {
-  if (inst === 'piano') showPiano.value = !showPiano.value
-  else showDrums.value = !showDrums.value
+  if (inst === 'piano') {
+    showPiano.value = !showPiano.value
+    if (showPiano.value) showDrums.value = false
+  } else {
+    showDrums.value = !showDrums.value
+    if (showDrums.value) showPiano.value = false
+  }
 }
 
 // --- Position shifting ---
@@ -424,16 +429,18 @@ defineExpose({ scan })
     <!-- Instruments (sticky bottom) -->
     <div class="border-t border-navy-800 p-3 flex-shrink-0">
       <!-- Instrument panels (conditional) -->
-      <div v-if="showPiano || showDrums" class="flex gap-4 items-end mb-3 px-3">
-        <div v-if="showPiano" class="flex-1 min-w-0">
-          <ControlsPiano
-            ref="pianoRef"
-            :low-note="48"
-            :high-note="83"
-            mode="button"
-            @change="onPianoChange"
-            @chord="onPianoChord"
-          />
+      <div v-if="showPiano || showDrums" class="flex gap-4 items-end justify-center mb-3">
+        <div v-if="showPiano" class="flex-1 min-w-0 overflow-x-auto">
+          <div class="min-w-max mx-auto">
+            <ControlsPiano
+              ref="pianoRef"
+              :low-note="48"
+              :high-note="83"
+              mode="button"
+              @change="onPianoChange"
+              @chord="onPianoChord"
+            />
+          </div>
         </div>
         <div v-if="showDrums" class="flex-shrink-0">
           <ControlsDrumPad @hit="onDrumHit" @combo="onDrumCombo" />
@@ -441,7 +448,7 @@ defineExpose({ scan })
       </div>
 
       <!-- Toggle bar -->
-      <div class="flex gap-2">
+      <div class="flex gap-2 justify-center">
         <button
           class="text-xs font-mono px-2 py-1 rounded transition-colors"
           :class="
